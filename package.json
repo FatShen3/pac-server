@@ -1,0 +1,28 @@
+{
+  "name": "pac-proxy-server",
+  "version": "1.0.0",
+  "description": "a proxy server using pac file to get the proxy strategy",
+  "main": "index.js",
+  "dependencies": {
+    "commander": "^3.0.1",
+    "socks": "^2.3.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FatShen3/pac-server.git"
+  },
+  "author": "fatshen3",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FatShen3/pac-server/issues"
+  },
+  "bin": {
+    "pps": "./index.js",
+    "pac-proxy-server": "./index.js"
+  },
+  "homepage": "https://github.com/FatShen3/pac-server#readme"
+}
