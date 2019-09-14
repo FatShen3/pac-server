@@ -8,6 +8,7 @@ const program = require('commander')
 const { promisify } = require('util')
 const readFile = promisify(fs.readFile)
 const exec = require('child_process').exec
+const chalk = require('chalk')
 
 program
   .option('--pac <filepath>', 'proxy.pac file location', path.resolve(__dirname, 'pac.js'))
@@ -16,21 +17,23 @@ program
   .option('--verbose', 'verbose mode', false)
   .parse(process.argv)
 
+const logger = require('./log')(program.verbose)
+
 const to = p => p.then(data => [null, data]).catch(err => [err || new Error('unknown error')])
 
 async function runserver () {
   // 获取pac文件路径
   const [execErr, execInfo] = await to(promisify(exec)(`echo ${program.pac}`, { cwd: process.cwd() }))
   if (execErr || execInfo.stderr) {
-    console.error(`finding pac file path error: ${execErr || execInfo.stderr}`)
+    logger.error(`finding pac file path error: ${execErr || execInfo.stderr}`)
     process.exit(1)
   }
   const pacPath = execInfo.stdout.replace(/[\r\n]/g, '')
-  console.log(`pac file location: ${pacPath}`)
+  logger.debug(`pac file location: ${pacPath}`)
   // 读取pac文件
   const [pacErr, pacScript] = await to(readFile(pacPath, { encoding: 'utf8' }))
   if (pacErr) {
-    console.error(`reading pac file error: ${pacErr}`)
+    logger.error(`reading pac file error: ${pacErr}`)
     process.exit(1)
   }
   // 创建一个执行pac的沙盒
@@ -45,7 +48,7 @@ async function runserver () {
       const chunkHost = firstChunk.toString().match(/Host: (.*)\r?\n/i)[1]
       // 查询匹配的代理
       vm.runInContext(`proxyUrl = FindProxyForURL('${chunkHost}', '${chunkHost}')`, sandbox)
-      console.log(`the request host: ${chunkHost}, will go through pac strategy: ${sandbox.proxyUrl}`)
+      logger.debug(`the request host: ${chunkHost}, will go through pac strategy: ${sandbox.proxyUrl}`)
       let port = +(chunkHost.split(':')[1] || '80')
       let host = chunkHost.split(':')[0]
       const proxyStrategies = []
@@ -58,25 +61,27 @@ async function runserver () {
           proxyStrategies.push(strategy)
         }
       }
+      const requestLogPrefix = `The request to ${chunkHost} : `
       for (let i = 0, len = proxyStrategies.length; i < len; i++) {
         const proxyStrategy = proxyStrategies[i]
         const [proxyErr] = await to(runpStrategy(proxyStrategy, host, port, firstChunk, clientSocket))
         if (proxyErr) {
-          console.error(`proxy ${proxyStrategy} got error: `, proxyErr)
+          logger.error(`${requestLogPrefix}proxy ${proxyStrategy} got error: `, proxyErr)
           if (i === len - 1) {
-            clientSocket.end('all of the proxies failed :(\n')
-            console.error('all of the proxies failed :(')
+            clientSocket.end(`${requestLogPrefix}all of the proxies failed :(\n`)
+            logger.error(`${requestLogPrefix}all of the proxies failed :(`)
           }
         } else {
+          logger.debug(`${requestLogPrefix}proxy strategy ${proxyStrategy} success`)
           break
         }
       }
     })
     clientSocket.on('error', err => {
-      console.error(`client socket got error: ${err}`)
+      logger.error(`client socket got error: ${err}`)
     })
   }).listen(program.port)
-  console.log(`pac-proxy-server listen on ${program.port}...`)
+  logger.info(`listen on ${program.port}...`)
 }
 
 async function runpStrategy (proxyStrategy, host, port, firstChunk, clientSocket) {
