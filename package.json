@@ -1,6 +1,6 @@
 {
   "name": "pac-proxy-server",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "a proxy server using pac file to get the proxy strategy",
   "main": "index.js",
   "dependencies": {

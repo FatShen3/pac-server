@@ -10,6 +10,20 @@ npm i -g pac-proxy-server
 
 During my work, I need to visit some websites via socks proxy, some internal network via my company's http proxy, and others direct. Through all the above can be done via [pac](https://en.wikipedia.org/wiki/Proxy_auto-config), but I still need pac strategy in command line, some paricular application, etc, which do not support pac directly.
 
+My own `pac` file's `FindProxyForURL` is something like below:
+
+```diff
+function FindProxyForURL(url, host) {
+  if (defaultMatcher.matchesAny(url, host) instanceof BlockingFilter) {
+    return proxy;
+  }
++ if (host.match(/^(128\.160|11\.)/) && !host.match(/128.160.180.97/)) {
++    return 'PROXY 128.160.180.97:808'
++  }
+  return direct;
+}
+```
+
 ## before use
 
 * You should have the `proxy.pac` file, and the proxy address in it is usable
