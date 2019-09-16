@@ -36,7 +36,7 @@ By passing the `proxy.pac` file location, this module will use the `FindProxyFor
 pps --pac ~/.ShadowsocksX-NG/gfwlist.js --port 8088
 ```
 
-By default, this module will use socks5 proxy `127.0.0.1:1080` for [gfwlist](https://github.com/gfwlist/gfwlist) websites. Take a look at `./pac.js`.
+By default, this module will use default strategy`"SOCKS5 127.0.0.1:1080; SOCKS 127.0.0.1:1080; DIRECT;"` for [gfwlist](https://github.com/gfwlist/gfwlist) websites. Take a look at `./pac.js`.
 
 ## options
 
@@ -49,6 +49,7 @@ Options:
   --pac <file>   proxy.pac file location (default: "/your/npm/repo/pac-proxy-server/pac.js")
   --port <port>  proxy server's port (default: 8088)
   --timeout <timeout>  each proxy timeout (default: 10000)
+  --verbose            verbose mode (default: false)
 ```
 
 ## unsupported
